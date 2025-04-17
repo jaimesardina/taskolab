@@ -26,4 +26,4 @@ app.include_router(agents.router, prefix="/agent")
 
 @app.get("/")
 def root():
-    return {"message": "SupportOps API is running"}
+    return {"message": "Taskolab API is running"}
