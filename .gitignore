@@ -1,0 +1,19 @@
+# Python related files
+__pycache__/
+*.pyc
+env/
+*.sqlite3
+
+# Node.js
+node_modules/
+dist/
+build/
+
+# General
+*.log
+*.env
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
