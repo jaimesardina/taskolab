@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api import auth, tasks, agents
 
 
-app = FastAPI(title="SupportOps API")
+app = FastAPI(title="Taskolab")
 
 # CORS for frontend communication
 app.add_middleware(
