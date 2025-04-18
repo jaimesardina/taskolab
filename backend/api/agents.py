@@ -4,7 +4,7 @@ from pydantic import BaseModel
 router = APIRouter()
 
 class TaskReport(BaseModel):
-    task_id: str
+    task_id: int
     agent_id: str
     result: str
 
