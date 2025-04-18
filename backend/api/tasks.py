@@ -14,5 +14,5 @@ def list_tasks():
     ]
 
 @router.post("/{task_id}/resolve", dependencies=[Depends(authenticate_user)])
-def resolve_task(task_id: str):
+def resolve_task(task_id: int):
     return {"task_id": task_id, "payload": "ping 8.8.8.8"}

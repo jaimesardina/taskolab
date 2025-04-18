@@ -1,7 +1,7 @@
 users_db = {
     "admin": {
         "username": "admin",
-        "password": "password",  # This should be hashed in production
+        "password": "p",  # This should be hashed in production
         "role": "admin"
     },
     "agent": {
