@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 
 # import users in db\template data 
-from db.template_data import users_db
+from backend.db.users import users_db
 
 SECRET_KEY = "supersecretkey"
 ALGORITHM = "HS256"

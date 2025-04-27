@@ -1,14 +1,9 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends
+from core.security import authenticate_user
+from core.mapper import get_mapper
 
 router = APIRouter()
 
-class TaskReport(BaseModel):
-    task_id: int
-    agent_id: str
-    result: str
-
-@router.post("/report")
-def report_task_execution(report: TaskReport):
-    print("[LOG]", report)
-    return {"status": "received"}
+@router.get("/mapper", dependencies=[Depends(authenticate_user)])
+def agent_mapper():
+    return get_mapper()
