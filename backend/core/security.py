@@ -34,6 +34,9 @@ def authenticate_user(token: str = Depends(oauth2_scheme)):
         username: str = payload.get("sub")
         if username is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
-        return username
+        user = users_db.get(username)
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user  # Return the full user dict, including 'role'
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")

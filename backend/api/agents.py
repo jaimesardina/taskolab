@@ -4,6 +4,7 @@ from core.mapper import get_mapper
 
 router = APIRouter()
 
-@router.get("/mapper", dependencies=[Depends(authenticate_user)])
-def agent_mapper():
-    return get_mapper()
+@router.get("/mapper")
+def agent_mapper(user=Depends(authenticate_user)):
+    
+    return get_mapper(user["role"])
