@@ -38,7 +38,7 @@ class TaskolabCLI:
 
     def dynamic_import(self, module_path):
         try:
-            module = importlib.import_module(f"backend.logic_templates.{module_path}")
+            module = importlib.import_module(f"backend.modules.{module_path}")
             return module
         except ImportError:
             print(f"Failed to import logic module: {module_path}")
