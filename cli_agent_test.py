@@ -78,10 +78,10 @@ class TaskolabCLI:
         if run_mode == "local":
             module = self.dynamic_import(module_path)
             self.run_logic(module)
-        elif run_mode == "remote":
+        elif run_mode == "server":
             headers = {"Authorization": f"Bearer {token}"}
             response = requests.post(
-                f"{self.api_base_url}/agent/execute",
+                f"{self.api_base_url}/agent/exec-server",
                 json={"module": module_path},
                 headers=headers
             )
