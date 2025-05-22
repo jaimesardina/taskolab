@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from core.security import authenticate_user
 from core.mapper import get_mapper
 import importlib
+import sys
+from io import StringIO
+import contextlib
+
 
 router = APIRouter()
 
@@ -13,17 +17,34 @@ def agent_mapper(user=Depends(authenticate_user)):
 def exec_server_task(data: dict, user=Depends(authenticate_user)):
     try:
         module_path = data.get("module")
+        user_input = data.get("input")
+        
         if not module_path:
-            return {"error": "No module specified"}
-            
-        module = importlib.import_module(f"backend.modules.{module_path}")
-        if hasattr(module, "main"):
-            module.main()
-            return {"result": "Task executed successfully"}
-        else:
-            return {"error": "Module has no main() function"}
-            
-    except ImportError as e:
-        return {"error": f"Failed to import module: {str(e)}"}
+            raise HTTPException(status_code=400, detail="No module specified")
+
+        output = StringIO()
+        with contextlib.redirect_stdout(output):
+            module = importlib.import_module(f"backend.modules.{module_path}")
+            if hasattr(module, "main"):  # Changed from run_logic to main
+                result = module.main(user_input)
+                
+                # If the module returns a dict with requires_input
+                if isinstance(result, dict) and result.get("requires_input"):
+                    return {
+                        "status": "success",
+                        "output": output.getvalue(),
+                        "requires_input": True,
+                        "prompt": result.get("prompt", "Enter your choice: ")
+                    }
+                
+            else:
+                raise HTTPException(status_code=400, detail="Module has no main() function")
+
+        return {
+            "status": "success",
+            "output": output.getvalue(),
+            "result": "Task executed successfully"
+        }
+
     except Exception as e:
-        return {"error": f"Error executing task: {str(e)}"}
+        raise HTTPException(status_code=500, detail=f"Error executing task: {str(e)}")
