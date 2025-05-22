@@ -54,14 +54,40 @@ class TaskolabCLI:
     def run(self):
         token = self.login()
         mapper_data = self.fetch_mapper(token)
+        tasks = mapper_data.get("tasks", [])
 
-        description = mapper_data.get("description")
-        module_path = mapper_data.get("module")
+        if not tasks:
+            print("No tasks available.")
+            return
 
-        print(f"\n{description}\n")
+        # Display menu
+        print("\nAvailable Modules:")
+        for idx, task in enumerate(tasks, 1):
+            print(f"{idx}. {task['name']} ({task['run_mode']}) - {task['description']}")
 
-        module = self.dynamic_import(module_path)
-        self.run_logic(module)
+        choice = input("\nSelect task to import: ")
+        try:
+            selected_task = tasks[int(choice) - 1]
+        except (IndexError, ValueError):
+            print("Invalid selection.")
+            return
+
+        module_path = selected_task["module"]
+        run_mode = selected_task["run_mode"]
+
+        if run_mode == "local":
+            module = self.dynamic_import(module_path)
+            self.run_logic(module)
+        elif run_mode == "remote":
+            headers = {"Authorization": f"Bearer {token}"}
+            response = requests.post(
+                f"{self.api_base_url}/agent/execute",
+                json={"module": module_path},
+                headers=headers
+            )
+            print("Server response:", response.text)
+        else:
+            print("Unknown run mode.")
 
 if __name__ == "__main__":
     cli = TaskolabCLI(api_base_url="http://127.0.0.1:8000")

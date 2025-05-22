@@ -4,7 +4,7 @@ Taskolab is a centralized automation platform that empowers support teams to run
 
 
 ## Current status of this project
-Taskolab is in very.. very.. **early development**.  
+Taskolab is in very.. **early development**.  
 However I will share that this project has a **working foundation** that includes:
 
 - Backend FastAPI server with secure JWT authentication
@@ -35,6 +35,9 @@ However I will share that this project has a **working foundation** that include
 - Role-based access control for users
 - Error handling and audit logging
 - Various testing
+
+### Good to know
+- A task is binded to a module.
 
 ## License
 MIT License with Commons Clause (See license for more detils)
