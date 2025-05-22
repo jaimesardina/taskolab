@@ -79,73 +79,65 @@ class TaskolabCLI:
         except requests.RequestException as e:
             print(f"Error communicating with server: {str(e)}")
 
-    def run_logic(user_input=None):
-        if user_input is None:
-            return {
-                "requires_input": True,
-                "prompt": "Choose a task:\n1. Ping Test\n2. Traceroute"
-            }
-        
-        if user_input == "1":
-            print("Running Ping Test...")
-            os.system("ping -c 4 google.com")
-        elif user_input == "2":
-            print("Running Traceroute...")
-            os.system("traceroute google.com")
-        else:
-            print("Invalid option")
+    def run_logic(self, module):  # Changed from user_input=None to self, module
+        try:
+            if hasattr(module, "main"):
+                response = module.main()
+                if response and response.get("requires_input"):
+                    user_input = input(response.get("prompt", "Enter your choice: "))
+                    module.main(user_input)
+            else:
+                print("Module has no main() function")
+        except Exception as e:
+            print(f"Error executing module: {str(e)}")
 
     def run(self):
-        token = self.login()
-        mapper_data = self.fetch_mapper(token)
-        tasks = mapper_data.get("tasks", [])
-
-        if not tasks:
-            print("No tasks available.")
-            return
-
-        # Display menu
-        print("\nAvailable Modules:")
-        for idx, task in enumerate(tasks, 1):
-            print(f"{idx}. {task['name']} ({task['run_mode']}) - {task['description']}")
-
-        choice = input("\nSelect task to import: ")
+        """Main execution loop for the CLI agent"""
         try:
-            selected_task = tasks[int(choice) - 1]
-        except (IndexError, ValueError):
-            print("Invalid selection.")
-            return
+            # Initialize session
+            token = self.login()
+            mapper_data = self.fetch_mapper(token)
+            tasks = mapper_data.get("tasks", [])
 
-        module_path = selected_task["module"]
-        run_mode = selected_task["run_mode"]
+            if not tasks:
+                print("No tasks available.")
+                return
 
-        if run_mode == "local":
-            module = self.dynamic_import(module_path)
-            self.run_logic(module)
-        elif run_mode == "server":
-            headers = {"Authorization": f"Bearer {token}"}
-            print("Sending request to server...")  # Debug print
-            self.execute_server_task(module_path, token)
+            # Display available tasks
+            print("\nAvailable Tasks:")
+            for idx, task in enumerate(tasks, 1):
+                print(f"{idx}. {task['name']} ({task['run_mode']}) - {task['description']}")
+
+            # Get user selection
+            choice = input("\nSelect task (or 'q' to quit): ")
+            if choice.lower() == 'q':
+                print("Exiting...")
+                return
+
             try:
-                response = requests.post(
-                    f"{self.api_base_url}/agent/exec-server",
-                    json={"module": module_path},
-                    headers=headers,
-                    timeout=10  # Reduced timeout
-                )
-                if response.status_code == 200:
-                    result = response.json()
-                    print("\nServer Output:")
-                    print(result.get("output", "No output"))
-                    print(f"\nStatus: {result.get('result', 'Complete')}")
-                else:
-                    print(f"Server error: {response.text}")
-            except requests.Timeout:
-                print("Request timed out after 10 seconds. Server taking too long to respond.")
-            except requests.RequestException as e:
-                print(f"Error communicating with server: {str(e)}")
-            except Exception as e:
-                print(f"Unexpected error: {str(e)}")
+                selected_task = tasks[int(choice) - 1]
+            except (IndexError, ValueError):
+                print("Invalid selection.")
+                return
+
+            # Execute task based on run mode
+            module_path = selected_task["module"]
+            run_mode = selected_task["run_mode"]
+
+            if run_mode == "local":
+                module = self.dynamic_import(module_path)
+                self.run_logic(module)
+            elif run_mode == "server":
+                print("Sending request to server...")
+                self.execute_server_task(module_path, token)
+            else:
+                print(f"Unsupported run mode: {run_mode}")
+
+        except KeyboardInterrupt:
+            print("\nOperation cancelled by user.")
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            sys.exit(1)
 
 if __name__ == "__main__":
     cli = TaskolabCLI(api_base_url="http://127.0.0.1:8000")

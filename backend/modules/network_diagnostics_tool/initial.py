@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from backend.modules.network_diagnostics_tool.ping_test import run_logic as execute_ping_test
+from backend.modules.network_diagnostics_tool.ping_test import ping_options
 
 # Ensure the current directory is in the system path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -18,7 +18,7 @@ def main(user_input=None):
         }
     
     # Execute the selected task
-    return execute_ping_test(user_input)
+    return ping_options(user_input)
 
 if __name__ == "__main__":
     # For local testing, run interactively
